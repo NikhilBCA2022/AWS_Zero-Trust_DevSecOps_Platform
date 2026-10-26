@@ -1,0 +1,40 @@
+# AWS configuration
+aws_region   = "ap-south-1"
+project_name = "aws-zero-trust-platform"
+environment  = "dev"
+
+# Network configuration
+vpc_cidr = "10.20.0.0/16"
+
+availability_zones = [
+  "ap-south-1a",
+  "ap-south-1b"
+]
+
+public_subnet_cidrs = [
+  "10.20.1.0/24",
+  "10.20.2.0/24"
+]
+
+private_subnet_cidrs = [
+  "10.20.11.0/24",
+  "10.20.12.0/24"
+]
+
+database_subnet_cidrs = [
+  "10.20.21.0/24",
+  "10.20.22.0/24"
+]
+
+# EKS API endpoint access
+# Replace this example with your trusted public IPv4 address followed by /32.
+# Do not use 0.0.0.0/0.
+eks_endpoint_public_access_cidrs = [
+  "203.0.113.10/32"
+]
+
+# GitHub Actions OIDC configuration
+# Replace these placeholders with the actual GitHub repository details.
+github_owner      = "NikhilBCA2022"
+github_repository = "AWS_Zero-Trust_DevSecOps_Platform"
+github_branch     = "main"

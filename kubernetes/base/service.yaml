@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-ops-api
+  namespace: cloud-ops
+  labels:
+    app.kubernetes.io/name: cloud-ops-dashboard-api
+    app.kubernetes.io/part-of: aws-zero-trust-platform
+spec:
+  type: ClusterIP
+  selector:
+    app: cloud-ops-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

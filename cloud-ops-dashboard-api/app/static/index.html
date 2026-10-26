@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloud Operations Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Cloud Operations Dashboard</h1>
+    <p class="sub">Simulated data stored in this app's database. Not live AWS telemetry.</p>
+    <div class="keybar">
+      <label for="api-key">API key (needed for changes)</label>
+      <input id="api-key" type="password" autocomplete="off" placeholder="Paste key. Kept in memory only.">
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+    <div id="message" role="status" aria-live="polite"></div>
+  </header>
+
+  <main>
+    <section aria-label="Summary">
+      <h2>Summary</h2>
+      <div id="metrics" class="cards"></div>
+    </section>
+
+    <section aria-label="Services">
+      <h2>Services</h2>
+      <form id="service-form" class="inline-form">
+        <input id="svc-name" placeholder="Service name" required maxlength="100" aria-label="Service name">
+        <select id="svc-env" aria-label="Environment">
+          <option value="dev">dev</option><option value="staging">staging</option><option value="prod">prod</option>
+        </select>
+        <select id="svc-status" aria-label="Status">
+          <option>HEALTHY</option><option>DEGRADED</option><option>DOWN</option>
+        </select>
+        <input id="svc-desc" placeholder="Description (optional)" maxlength="500" aria-label="Description">
+        <button type="submit">Add service</button>
+      </form>
+      <div class="filters">
+        <label>Environment
+          <select id="f-svc-env"><option value="">all</option><option>dev</option><option>staging</option><option>prod</option></select>
+        </label>
+        <label>Status
+          <select id="f-svc-status"><option value="">all</option><option>HEALTHY</option><option>DEGRADED</option><option>DOWN</option></select>
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Env</th><th>Status</th><th>Description</th><th>Actions</th></tr></thead>
+          <tbody id="services-body"></tbody>
+        </table>
+      </div>
+      <div id="svc-pager" class="pager"></div>
+    </section>
+
+    <section aria-label="Incidents">
+      <h2>Incidents</h2>
+      <form id="incident-form" class="inline-form">
+        <input id="inc-title" placeholder="Incident title" required maxlength="200" aria-label="Incident title">
+        <select id="inc-severity" aria-label="Severity">
+          <option>LOW</option><option>MEDIUM</option><option selected>HIGH</option><option>CRITICAL</option>
+        </select>
+        <select id="inc-service" aria-label="Affected service" required></select>
+        <input id="inc-desc" placeholder="Description (optional)" maxlength="2000" aria-label="Description">
+        <button type="submit">Report incident</button>
+      </form>
+      <div class="filters">
+        <label>Severity
+          <select id="f-inc-severity"><option value="">all</option><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select>
+        </label>
+        <label>Status
+          <select id="f-inc-status"><option value="">all</option><option>OPEN</option><option>INVESTIGATING</option><option>RESOLVED</option></select>
+        </label>
+        <label>Service
+          <select id="f-inc-service"><option value="">all</option></select>
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th><th>Service</th><th>Created</th><th>Resolved</th></tr></thead>
+          <tbody id="incidents-body"></tbody>
+        </table>
+      </div>
+      <div id="inc-pager" class="pager"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

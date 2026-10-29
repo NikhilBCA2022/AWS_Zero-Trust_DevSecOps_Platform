@@ -256,7 +256,6 @@ resource "aws_wafv2_web_acl" "this" {
 }
 
 # IAM role for the Cloud Ops API to retrieve its dedicated database secret.
-data "aws_caller_identity" "current" {}
 
 data "aws_partition" "current" {}
 

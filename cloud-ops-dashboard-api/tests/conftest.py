@@ -1,4 +1,6 @@
 """Shared test setup: every test gets a fresh in-memory database and a test API key."""
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
@@ -7,9 +9,39 @@ from sqlalchemy.pool import StaticPool
 
 from app.config import Settings, get_settings
 from app.database import Base, get_db
-from app.main import app
+
+# Environment variables that influence application configuration.
+# They must be cleared *before* ``app.main`` is imported, because
+# ``app/main.py`` calls ``get_settings()`` at import time and the result is
+# cached by ``@lru_cache``.  If they are left in place, the developer's shell
+# environment leaks into the test configuration (log level, docs visibility,
+# API keys, database URL, …) and can never be undone for the test session.
+_ENV_VARS_TO_ISOLATE = (
+    "APP_ENV",
+    "LOG_LEVEL",
+    "ENABLE_DOCS",
+    "DATABASE_URL",
+    "DB_HOST",
+    "DB_PORT",
+    "DB_NAME",
+    "DB_USER",
+    "DB_PASSWORD",
+    "API_KEYS",
+)
+
+for _name in _ENV_VARS_TO_ISOLATE:
+    os.environ.pop(_name, None)
+
+from app.main import app  # noqa: E402 – must come after env-var cleanup above
 
 TEST_API_KEY = "test-key-0123456789-abcdefghij"
+
+
+@pytest.fixture(autouse=True)
+def isolate_application_environment(monkeypatch):
+    """Prevent the developer's shell environment from leaking into tests."""
+    for name in _ENV_VARS_TO_ISOLATE:
+        monkeypatch.delenv(name, raising=False)
 
 
 @pytest.fixture

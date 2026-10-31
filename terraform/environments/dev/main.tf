@@ -8,6 +8,8 @@ module "network" {
   public_subnet_cidrs   = var.public_subnet_cidrs
   private_subnet_cidrs  = var.private_subnet_cidrs
   database_subnet_cidrs = var.database_subnet_cidrs
+  runner_subnet_cidr    = var.runner_subnet_cidr
+  runner_subnet_az      = var.runner_subnet_az
 
   name_prefix = local.name_prefix
   common_tags = local.common_tags
@@ -65,8 +67,11 @@ module "endpoints" {
 
   endpoint_client_security_group_ids = [
     module.security.baseline_security_group_id,
-    module.eks.cluster_security_group_id
+    module.eks.cluster_security_group_id,
+    module.runner.runner_security_group_id,
+    module.runner.nat_security_group_id
   ]
+  runner_route_table_id = module.network.runner_route_table_id
 }
 
 module "logging" {
@@ -129,4 +134,55 @@ module "edge" {
   name_prefix         = local.name_prefix
   common_tags         = local.common_tags
   eks_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
+  database_secret_arn = module.rds.db_master_user_secret_arn
+}
+
+
+module "runner" {
+  source = "../../modules/runner"
+
+  name_prefix           = local.name_prefix
+  common_tags           = local.common_tags
+  vpc_id                = module.network.vpc_id
+  vpc_cidr              = module.network.vpc_cidr
+  public_subnet_id      = module.network.public_subnet_ids[0]
+  runner_subnet_id      = module.network.runner_subnet_id
+  runner_route_table_id = module.network.runner_route_table_id
+  nat_instance_type     = var.nat_instance_type
+  runner_instance_type  = var.runner_instance_type
+}
+# Allow the private GitHub Actions runner to reach the EKS Kubernetes API.
+resource "aws_vpc_security_group_ingress_rule" "runner_to_eks_api" {
+  security_group_id            = module.eks.cluster_security_group_id
+  referenced_security_group_id = module.runner.runner_security_group_id
+
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+
+  description = "Allow private GitHub Actions runner to access EKS API"
+}
+# Allow the private runner to authenticate to the EKS cluster.
+resource "aws_eks_access_entry" "runner" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = module.runner.runner_role_arn
+  type          = "STANDARD"
+
+  tags = local.common_tags
+}
+
+# Grant read-only Kubernetes access to the private runner.
+resource "aws_eks_access_policy_association" "runner_view" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = module.runner.runner_role_arn
+
+  policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [
+    aws_eks_access_entry.runner
+  ]
 }

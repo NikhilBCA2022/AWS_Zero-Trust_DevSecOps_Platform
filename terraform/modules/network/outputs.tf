@@ -41,3 +41,12 @@ output "database_route_table_id" {
   description = "ID of the database route table"
   value       = aws_route_table.database.id
 }
+output "runner_subnet_id" {
+  description = "ID of the optional dedicated runner subnet"
+  value       = length(aws_subnet.runner) > 0 ? aws_subnet.runner[0].id : null
+}
+
+output "runner_route_table_id" {
+  description = "ID of the optional dedicated runner route table"
+  value       = length(aws_route_table.runner) > 0 ? aws_route_table.runner[0].id : null
+}

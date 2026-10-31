@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-ops-api
+  namespace: cloud-ops
+spec:
+  template:
+    spec:
+      serviceAccountName: cloud-ops-api
+      containers:
+        - name: cloud-ops-api
+          env:
+            - name: APP_ENV
+              value: "dev"
+            - name: ENABLE_DOCS
+              value: "false"
+            - name: AWS_REGION
+              value: "ap-south-1"
+            - name: DB_SECRET_ARN
+              value: "arn:aws:secretsmanager:ap-south-1:774609032429:secret:rds!db-e3cc51fa-2488-49f1-b423-35355dff2437-HByhFa"
+            - name: DB_HOST
+              value: "aws-zero-trust-platform-dev-postgres.c5k8og6qi0lt.ap-south-1.rds.amazonaws.com"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "appdb"

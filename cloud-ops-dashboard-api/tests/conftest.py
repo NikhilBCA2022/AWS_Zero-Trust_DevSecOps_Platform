@@ -26,6 +26,8 @@ _ENV_VARS_TO_ISOLATE = (
     "DB_NAME",
     "DB_USER",
     "DB_PASSWORD",
+    "DB_SECRET_ARN",
+    "AWS_REGION",
     "API_KEYS",
 )
 

@@ -106,3 +106,38 @@ resource "aws_route_table_association" "database" {
   subnet_id      = aws_subnet.database[count.index].id
   route_table_id = aws_route_table.database.id
 }
+# Dedicated private subnet for the self-hosted GitHub Actions runner.
+resource "aws_subnet" "runner" {
+  count = (
+    var.runner_subnet_cidr != "" &&
+    var.runner_subnet_az != ""
+  ) ? 1 : 0
+
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = var.runner_subnet_cidr
+  availability_zone       = var.runner_subnet_az
+  map_public_ip_on_launch = false
+
+  tags = merge(var.common_tags, {
+    Name = "${var.name_prefix}-runner"
+    Tier = "Private-Runner"
+  })
+}
+
+# Dedicated route table so runner routing does not change existing private routes.
+resource "aws_route_table" "runner" {
+  count  = length(aws_subnet.runner)
+  vpc_id = aws_vpc.this.id
+
+  tags = merge(var.common_tags, {
+    Name = "${var.name_prefix}-runner-rt"
+    Tier = "Private-Runner"
+  })
+}
+
+resource "aws_route_table_association" "runner" {
+  count = length(aws_subnet.runner)
+
+  subnet_id      = aws_subnet.runner[count.index].id
+  route_table_id = aws_route_table.runner[count.index].id
+}

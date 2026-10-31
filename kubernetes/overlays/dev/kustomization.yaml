@@ -8,5 +8,9 @@ resources:
 
 images:
   - name: REPLACE_WITH_ECR_IMAGE
-    newName: REPLACE_WITH_ECR_IMAGE
+    newName: 774609032429.dkr.ecr.ap-south-1.amazonaws.com/aws-zero-trust-platform-dev-app
     newTag: latest
+patches:
+  - path: patch.yaml
+  - path: service-account-patch.yaml
+  - path: ingress-patch.yaml

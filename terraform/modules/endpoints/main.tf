@@ -51,9 +51,10 @@ resource "aws_vpc_endpoint" "s3" {
   service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
   vpc_endpoint_type = "Gateway"
 
-  route_table_ids = [
-    var.private_route_table_id
-  ]
+  route_table_ids = compact([
+    var.private_route_table_id,
+    var.runner_route_table_id
+  ])
 
   tags = merge(var.common_tags, {
     Name    = "${var.name_prefix}-s3-endpoint"

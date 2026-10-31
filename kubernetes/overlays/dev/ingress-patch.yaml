@@ -1,0 +1,7 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloud-ops-api
+  namespace: cloud-ops
+  annotations:
+    alb.ingress.kubernetes.io/wafv2-acl-arn: arn:aws:wafv2:ap-south-1:774609032429:regional/webacl/aws-zero-trust-platform-dev-web-acl/b23f158d-5d04-47f2-b438-263a806b818c

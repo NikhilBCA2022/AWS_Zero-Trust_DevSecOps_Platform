@@ -43,3 +43,9 @@ variable "endpoint_client_security_group_ids" {
     error_message = "At least one client security group ID must be supplied."
   }
 }
+
+variable "runner_route_table_id" {
+  description = "Optional route table ID for the private runner subnet"
+  type        = string
+  default     = null
+}

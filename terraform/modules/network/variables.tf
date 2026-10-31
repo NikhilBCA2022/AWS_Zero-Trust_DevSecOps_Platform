@@ -62,3 +62,14 @@ variable "database_subnet_cidrs" {
     error_message = "Exactly two database subnet CIDRs must be provided."
   }
 }
+variable "runner_subnet_cidr" {
+  description = "Optional CIDR block for the dedicated private GitHub Actions runner subnet"
+  type        = string
+  default     = ""
+}
+
+variable "runner_subnet_az" {
+  description = "Optional Availability Zone for the dedicated runner subnet"
+  type        = string
+  default     = ""
+}

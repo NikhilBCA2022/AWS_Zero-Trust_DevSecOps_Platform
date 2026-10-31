@@ -82,3 +82,26 @@ variable "database_subnet_cidrs" {
   type        = list(string)
   default     = ["10.20.21.0/24", "10.20.22.0/24"]
 }
+variable "runner_subnet_cidr" {
+  description = "CIDR block for the dedicated private GitHub Actions runner subnet"
+  type        = string
+  default     = "10.20.13.0/24"
+}
+
+variable "runner_subnet_az" {
+  description = "Availability Zone for the dedicated runner subnet"
+  type        = string
+  default     = "ap-south-1a"
+}
+
+variable "nat_instance_type" {
+  description = "EC2 instance type for the NAT instance"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "runner_instance_type" {
+  description = "EC2 instance type for the self-hosted GitHub Actions runner"
+  type        = string
+  default     = "t3.medium"
+}

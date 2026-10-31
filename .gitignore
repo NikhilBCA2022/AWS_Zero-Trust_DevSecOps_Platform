@@ -52,3 +52,11 @@ terraform/environments/dev/tfplan-audit
 # Terraform generated plan files
 *.tfplan
 tfplan
+# Terraform plan files — may contain sensitive values
+tfplan*
+*.tfplan
+*.plan
+
+# Terraform local state and backups
+*.tfstate
+*.tfstate.*

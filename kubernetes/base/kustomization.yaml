@@ -8,4 +8,5 @@ resources:
   - deployment.yaml
   - service.yaml
   - network-policy.yaml
+  - migration-job.yaml
   - ingress.yaml

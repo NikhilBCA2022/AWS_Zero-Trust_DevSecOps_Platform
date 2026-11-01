@@ -273,6 +273,20 @@ jobs:
             --region ap-south-1 \
             --name "$EKS_CLUSTER_NAME"
 
+      - name: Remove previous migration Job
+        env:
+          K8S_NAMESPACE: ${{ vars.K8S_NAMESPACE }}
+        run: |
+          set -euo pipefail
+
+          test -n "$K8S_NAMESPACE"
+
+          # Job specs are immutable, so the Job is recreated on every deploy.
+          kubectl delete job cloud-ops-migrate \
+            --namespace "$K8S_NAMESPACE" \
+            --ignore-not-found \
+            --wait=true
+
       - name: Deploy Kubernetes manifests with verified image
         env:
           ECR_REPOSITORY_URL: ${{ vars.ECR_REPOSITORY_URL }}
@@ -322,6 +336,26 @@ jobs:
           kubectl apply \
             --filename "$rendered_manifest" \
             --namespace "$K8S_NAMESPACE"
+
+      - name: Wait for database migration
+        env:
+          K8S_NAMESPACE: ${{ vars.K8S_NAMESPACE }}
+        run: |
+          set -euo pipefail
+
+          test -n "$K8S_NAMESPACE"
+
+          if ! kubectl wait --for=condition=complete \
+            job/cloud-ops-migrate \
+            --namespace "$K8S_NAMESPACE" \
+            --timeout=240s; then
+            echo "Migration did not complete. Diagnostics:"
+            kubectl describe job/cloud-ops-migrate --namespace "$K8S_NAMESPACE" || true
+            kubectl logs job/cloud-ops-migrate --namespace "$K8S_NAMESPACE" --tail=60 || true
+            exit 1
+          fi
+
+          kubectl logs job/cloud-ops-migrate --namespace "$K8S_NAMESPACE" --tail=30
 
       - name: Verify deployment rollout
         env:

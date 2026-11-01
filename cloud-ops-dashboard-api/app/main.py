@@ -74,5 +74,16 @@ async def database_unavailable_handler(request: Request, exc: OperationalError):
 
 @app.exception_handler(SQLAlchemyError)
 async def database_error_handler(request: Request, exc: SQLAlchemyError):
-    logger.error("Database error: %s", type(exc).__name__)
+    orig = getattr(exc, "orig", None)
+    sqlstate = getattr(orig, "pgcode", None)
+    diag = getattr(orig, "diag", None)
+    primary = (getattr(diag, "message_primary", None) or "")[:200]
+    # Primary message only: no DSN, parameters, or full SQL statement.
+    logger.error(
+        "Database error on %s: %s sqlstate=%s detail=%s",
+        request.url.path,
+        type(exc).__name__,
+        sqlstate,
+        primary,
+    )
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})

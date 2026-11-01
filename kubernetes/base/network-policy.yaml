@@ -68,3 +68,45 @@ spec:
       ports:
         - protocol: TCP
           port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloud-ops-migrate-restrictive
+  namespace: cloud-ops
+spec:
+  podSelector:
+    matchLabels:
+      app: cloud-ops-migrate
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - ipBlock:
+            cidr: 10.20.21.0/24
+        - ipBlock:
+            cidr: 10.20.22.0/24
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - ipBlock:
+            cidr: 10.20.11.0/24
+        - ipBlock:
+            cidr: 10.20.12.0/24
+      ports:
+        - protocol: TCP
+          port: 443

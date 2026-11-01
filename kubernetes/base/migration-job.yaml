@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cloud-ops-migrate
+  namespace: cloud-ops
+  labels:
+    app.kubernetes.io/name: cloud-ops-dashboard-api
+    app.kubernetes.io/component: migration
+    app.kubernetes.io/part-of: aws-zero-trust-platform
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 240
+  template:
+    metadata:
+      labels:
+        app: cloud-ops-migrate
+        app.kubernetes.io/name: cloud-ops-dashboard-api
+    spec:
+      restartPolicy: Never
+      serviceAccountName: cloud-ops-api
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrate
+          image: 774609032429.dkr.ecr.ap-south-1.amazonaws.com/aws-zero-trust-platform-dev-app:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "alembic", "upgrade", "head"]
+          env: [{"name": "APP_ENV", "value": "dev"}, {"name": "ENABLE_DOCS", "value": "false"}, {"name": "AWS_REGION", "value": "ap-south-1"}, {"name": "DB_SECRET_ARN", "value": "arn:aws:secretsmanager:ap-south-1:774609032429:secret:rds!db-e3cc51fa-2488-49f1-b423-35355dff2437-HByhFa"}, {"name": "DB_HOST", "value": "aws-zero-trust-platform-dev-postgres.c5k8og6qi0lt.ap-south-1.rds.amazonaws.com"}, {"name": "DB_PORT", "value": "5432"}, {"name": "DB_NAME", "value": "appdb"}, {"name": "LOG_LEVEL", "value": "INFO"}]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
